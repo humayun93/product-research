@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zajil-AI Interactive Presentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #E0E7FF; /* Light lavender background like the PDF */
+            color: #1F2937; /* Dark gray text */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .presentation-container {
+            width: 90%;
+            max-width: 1000px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .slide {
+            display: none;
+            padding: 40px;
+            min-height: 500px; /* Ensure slides have a minimum height */
+            box-sizing: border-box;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .slide.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #374151; /* Slightly lighter dark gray */
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .slide-subtitle {
+            font-size: 1.25rem;
+            color: #4B5563;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 40px;
+            border-top: 1px solid #E5E7EB;
+            background-color: #F9FAFB;
+        }
+        .nav-button {
+            background-color: #4F46E5; /* Indigo */
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .nav-button:hover {
+            background-color: #4338CA; /* Darker Indigo */
+        }
+        .nav-button:disabled {
+            background-color: #9CA3AF; /* Gray for disabled */
+            cursor: not-allowed;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4F46E5;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .section-heading {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+        .card {
+            background-color: #F3F4F6; /* Light gray card background */
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .card h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #4F46E5;
+            margin-bottom: 8px;
+        }
+        .infographic-bar-container {
+            width: 100%;
+            background-color: #E5E7EB;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .infographic-bar {
+            background-color: #60A5FA; /* Blue for bars */
+            height: 30px;
+            border-radius: 8px;
+            text-align: right;
+            padding-right: 10px;
+            line-height: 30px;
+            color: white;
+            font-weight: 500;
+            transition: width 0.5s ease-in-out;
+        }
+        .problem-solution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .roadmap-timeline {
+            position: relative;
+            padding-left: 30px; /* Space for the timeline line */
+            border-left: 3px solid #4F46E5;
+        }
+        .roadmap-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #F9FAFB;
+            border-radius: 8px;
+            border: 1px solid #E5E7EB;
+        }
+        .roadmap-item::before {
+            content: '';
+            position: absolute;
+            left: -38.5px; /* Adjust to center on the line */
+            top: 15px;
+            width: 15px;
+            height: 15px;
+            background-color: #4F46E5;
+            border-radius: 50%;
+            border: 3px solid white;
+            z-index: 1;
+        }
+        .roadmap-item strong { color: #4F46E5; }
+        .architecture-diagram {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 20px;
+            border: 2px dashed #CBD5E1;
+            border-radius: 8px;
+            background-color: #F9FAFB;
+        }
+        .arch-component {
+            background-color: #E0E7FF;
+            border: 1px solid #A5B4FC;
+            color: #373131;
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-align: center;
+            min-width: 120px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .arch-arrow {
+            font-size: 1.5rem;
+            color: #4F46E5;
+            align-self: center;
+        }
+        .text-center { text-align: center; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .md\:grid-cols-2 { @media (min-width: 768px) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .lg\:grid-cols-3 { @media (min-width: 1024px) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .gap-6 { gap: 1.5rem; }
+        .footer-text {
+            font-size: 0.9rem;
+            color: #6B7280;
+            text-align: center;
+            margin-top: 30px;
+        }
+        .zajil-logo-text {
+            font-weight: 700;
+            color: #4F46E5; /* Indigo */
+        }
+        .highlight {
+            color: #4F46E5;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div id="slide1" class="slide active">
+            <div class="logo">✔ ZAJIL AI</div>
+            <h1 class="slide-title mt-12">ZAJIL AI</h1>
+            <p class="slide-subtitle">Empowering UAE residents to make informed property investments through AI-driven insights.</p>
+            <p class="text-center mt-8 text-lg text-gray-600">ZAJIL-AI.COM</p>
+             <img src="https://placehold.co/600x300/E0E7FF/4F46E5?text=AI+Powered+Property+Insights" alt="AI Property Insights" class="mx-auto mt-8 rounded-lg shadow-md">
+        </div>
+
+        <!-- Slide 2: Mission -->
+        <div id="slide2" class="slide">
+            <h1 class="slide-title">Mission</h1>
+            <div class="text-center">
+                <p class="text-2xl text-gray-700 mb-6">To make property ownership <span class="highlight">accessible</span> and <span class="highlight">achievable</span> for every UAE resident.</p>
+                <p class="text-lg text-gray-600">Utilizing machine learning and data analytics to provide personalized property recommendations, helping users find the perfect investment opportunities.</p>
+                 <img src="https://placehold.co/500x250/E0E7FF/4F46E5?text=Our+Mission" alt="Mission Visual" class="mx-auto mt-8 rounded-lg shadow-md">
+            </div>
+        </div>
+
+        <!-- Slide 3: Problem -->
+        <div id="slide3" class="slide">
+            <h1 class="slide-title">The Problem</h1>
+            <div class="problem-solution-grid">
+                <div class="card">
+                    <h3>For Users</h3>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Difficulty in finding the right property that aligns with personal goals and financial situation.</li>
+                        <li>Overwhelming choices with no personalized guidance.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>For Developers</h3>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Lack of insight into what potential buyers are looking for.</li>
+                        <li>Challenges in targeting the right audience for their projects.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>For Agents</h3>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Struggle to identify and target the right market segments based on current market dynamics.</li>
+                        <li>Limited access to comprehensive market insights, leading to missed opportunities and ineffective property showings.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Solution -->
+        <div id="slide4" class="slide">
+            <h1 class="slide-title">Our Solution</h1>
+            <div class="problem-solution-grid">
+                <div class="card">
+                    <h3>For Users</h3>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Comprehensive profiling for preferences & finances.</li>
+                        <li>AI-driven tailored recommendations.</li>
+                        <li>Timely alerts and market trends.</li>
+                        <li>Contextual chat (Zajil-GPT) for property data interaction.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>For Developers</h3>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Portal with insights into user preferences.</li>
+                        <li>Tools to target specific user segments.</li>
+                        <li>Advanced analytics on user engagement.</li>
+                        <li>Predictive tools to anticipate market shifts.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>For Agents</h3>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Custom dashboards with real-time user search insights.</li>
+                        <li>Detailed market analytics and trends.</li>
+                        <li>Predictive tools for market shifts and client needs.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Market Size -->
+        <div id="slide5" class="slide">
+            <h1 class="slide-title">Market Size (UAE Residential Real Estate)</h1>
+            <div class="text-center">
+                <p class="text-xl text-gray-700 mb-4">Expected CAGR: <span class="text-3xl font-bold text-blue-500">~8.4%</span> (2024-2030)</p>
+                <div class="infographic-bar-container my-4">
+                    <div class="infographic-bar" style="width: 84%;" id="marketGrowthBar">8.4% Growth</div>
+                </div>
+                <p class="text-gray-600 mb-8">Driven by strong economic fundamentals, increasing urbanization, and a rising population of expatriates and young professionals.</p>
+                
+                <p class="text-xl text-gray-700 mb-4">Total Value of Projects (2023): <span class="text-3xl font-bold text-green-500">$409 Billion</span></p>
+                <div class="infographic-bar-container my-4">
+                     <div class="infographic-bar bg-green-500" style="width: 100%;" id="projectValueBar">$409B Planned/Under Construction</div>
+                </div>
+                <p class="text-gray-600">Highlighting significant ongoing investments and developments in the sector.</p>
+            </div>
+        </div>
+
+        <!-- Slide 6: Business Model -->
+        <div id="slide6" class="slide">
+            <h1 class="slide-title">Business Model</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                <div class="card">
+                    <h3>Users</h3>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Free access to most platform features.</li>
+                        <li>Paid subscription for detailed/advanced insights & predictions.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Developers</h3>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Subscription for posting & promoting projects.</li>
+                        <li>Premium advertising for specific user profiles.</li>
+                        <li>Targeted leads channel.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Agents</h3>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Paid subscription for custom dashboards & market insights.</li>
+                        <li>Premium plans: predictive analytics, client tracking, prioritized alerts.</li>
+                        <li>Targeted leads channel.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Advertisements</h3>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Ad placements for developers, agents, banks, etc.</li>
+                        <li>Leverage user behavior for highly targeted ads.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: User Profiling -->
+        <div id="slide7" class="slide">
+            <h1 class="slide-title">User Profiling</h1>
+            <p class="text-center text-gray-600 mb-6">How we understand our users...</p>
+            <div class="architecture-diagram flex-col items-center">
+                <div class="arch-component p-4 text-xl">USER</div>
+                <div class="arch-arrow text-3xl self-center">↓</div>
+                <div class="arch-component p-4 bg-indigo-200 border-indigo-400 w-3/4 text-center">
+                    RELEVANT QUESTIONS
+                    <div class="flex justify-around mt-2 text-sm">
+                        <span>Personal & Family Situation</span>
+                        <span>Risk Profile</span>
+                        <span>Investment Goals & Preferences</span>
+                        <span>Financial Assessment</span>
+                        <span>Regulatory & Compliance</span>
+                    </div>
+                </div>
+                <div class="arch-arrow text-3xl self-center">↓</div>
+                <div class="arch-component p-4 text-xl">USER BUCKETS</div>
+                <div class="flex flex-wrap justify-center gap-4 mt-4">
+                    <div class="arch-component bg-blue-100 border-blue-300">High Income Earners</div>
+                    <div class="arch-component bg-green-100 border-green-300">Family Oriented</div>
+                    <div class="arch-component bg-yellow-100 border-yellow-300">Young Professionals</div>
+                    <div class="arch-component bg-red-100 border-red-300">Budget Conscious</div>
+                    <div class="arch-component">...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Property Data Sources -->
+        <div id="slide8" class="slide">
+            <h1 class="slide-title">Property Data Sources</h1>
+            <p class="text-center text-gray-600 mb-6">Sourcing property data is very important. We ensure data is updated regularly and is accurate through multiple sources.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card items-center text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    <h3>Developer Partnerships</h3>
+                </div>
+                <div class="card items-center text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                    <h3>Agent Partnerships</h3>
+                </div>
+                <div class="card items-center text-center">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+                    <h3>Web Portals / DLD</h3>
+                </div>
+                <div class="card items-center text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                    <h3>3rd Party Applications</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Architecture Design -->
+        <div id="slide9" class="slide">
+            <h1 class="slide-title">Architecture Design</h1>
+            <p class="text-center text-gray-600 mb-6">A simplified overview of our system.</p>
+            <div class="architecture-diagram">
+                <div class="arch-component">USER (Web/Mobile Front-End)</div>
+                <div class="arch-arrow self-center hidden md:block">→</div>
+                <div class="arch-component">Load Balancer</div>
+                <div class="arch-arrow self-center hidden md:block">→</div>
+                <div class="arch-component">WEB APP (Admin, User, Developer, Agent)</div>
+                 <div class="w-full md:hidden arch-arrow self-center text-center my-2">↓</div>
+                <div class="arch-arrow self-center hidden md:block">→</div>
+                <div class="arch-component">SERVICES (SOA) / Message Queue</div>
+                <div class="w-full md:hidden arch-arrow self-center text-center my-2">↓</div>
+                <div class="arch-component">DATABASE (Postgres)</div>
+                 <div class="arch-arrow self-center hidden md:block">↔</div>
+                <div class="arch-component">WORKERS</div>
+                <div class="w-full md:hidden arch-arrow self-center text-center my-2">↓</div>
+                <div class="arch-component">Data Preprocessing / Normalization / Cleanup</div>
+                 <div class="arch-arrow self-center hidden md:block">↔</div>
+                <div class="arch-component">CRON JOBS</div>
+                <div class="w-full md:hidden arch-arrow self-center text-center my-2">↓</div>
+                 <div class="arch-component">3rd Party APIs / Data Collection</div>
+                 <div class="arch-arrow self-center hidden md:block">→</div>
+                <div class="arch-component">MACHINE LEARNING MODELS (Tensorflow, Keras, Pytorch, Langchain - ZajilGPT)</div>
+                <div class="w-full mt-4 text-center">
+                    <div class="arch-component inline-block">Logging & Monitoring</div>
+                </div>
+            </div>
+            <p class="text-center text-sm text-gray-500 mt-6"><strong>Tech Stack:</strong> React, Ruby on Rails, Postgres, Rabbit MQ, Amazon AWS, Tensorflow, Pytorch, Langchain, Docker</p>
+        </div>
+        
+        <!-- Slide 10: Machine Learning -->
+        <div id="slide10" class="slide">
+            <h1 class="slide-title">Machine Learning Use Cases</h1>
+            <p class="text-center text-gray-600 mb-6">Currently working on:</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card">
+                    <h3>ZajilGPT</h3>
+                    <p class="text-gray-600">Contextual interaction with location data, personalized responses via user profiling and LangChain.</p>
+                </div>
+                <div class="card">
+                    <h3>Recommended Localities to Invest</h3>
+                    <p class="text-gray-600">Personalized investment recommendations (localities, property types) based on user profile and interests.</p>
+                </div>
+                <div class="card">
+                    <h3>Localities Similar to User's Interest</h3>
+                    <p class="text-gray-600">Identify matching localities using neural networks & cosine similarity, analyzing user preferences.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Roadmap - Product -->
+        <div id="slide11" class="slide">
+            <h1 class="slide-title">Product Roadmap</h1>
+            <div class="roadmap-timeline">
+                <div class="roadmap-item"><strong>1. Idea:</strong> Surveyed need for such an application.</div>
+                <div class="roadmap-item"><strong>2. Brainstorming & Scoping:</strong> Refined idea with industry experts, prioritized MVP features.</div>
+                <div class="roadmap-item"><strong>3. Finding the right team:</strong> Assembled expertise.</div>
+                <div class="roadmap-item"><strong>4. Started Development:</strong> Focused on backend (data sourcing) and ML model analysis.</div>
+                <div class="roadmap-item"><strong>5. Understanding Data:</strong> Working on ML models.</div>
+                <div class="roadmap-item"><strong>6. Integration of models with data:</strong> Property data integrated with ML models (preprocessing/testing).</div>
+                <div class="roadmap-item"><strong>7. User profiling integration:</strong> User buckets with ML models (testing/data analysis).</div>
+                <div class="roadmap-item"><strong>8. Front end integration:</strong> UX design and integration with backend.</div>
+                <div class="roadmap-item bg-indigo-100 border-indigo-500"><strong>9. Alpha launch (CURRENTLY HERE):</strong> Internal launch to ensure MVP readiness.</div>
+                <div class="roadmap-item"><strong>10. Beta Launch:</strong> MVP launch with limited access for feedback.</div>
+                <div class="roadmap-item"><strong>11. MVP launch:</strong> Product launch with marketing and sales.</div>
+                <div class="roadmap-item"><strong>12. Continuous Development:</strong> Sprint-based work on priority features from backlog.</div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Vision -->
+        <div id="slide12" class="slide">
+            <h1 class="slide-title">Vision: Your Trusted Property Advisor</h1>
+            <p class="slide-subtitle">To make Zajil the <span class="highlight">go-to platform</span> for every UAE resident when purchasing property.</p>
+            <div class="text-gray-700 text-lg space-y-4">
+                <p>Whether you're looking for an investment opportunity or your dream home, Zajil will provide <span class="highlight">personalized, data-driven recommendations</span> that align with your goals.</p>
+                <p><strong>Example:</strong> Considering a 1-bedroom in DIFC for rental yield? Zajil might analyze your profile and suggest better-performing areas like Business Bay or Dubai Creek based on market trends, rental returns, etc.</p>
+                <h3 class="section-heading mt-6">Core Vision:</h3>
+                <ul class="list-disc list-inside space-y-2 ml-4">
+                    <li>Personalized, AI-driven property recommendations.</li>
+                    <li>Extensive profiling to understand user goals, financial capacity, and preferences.</li>
+                    <li>Data-backed insights on investment opportunities across UAE's dynamic real estate market.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Slide 13: Actual Work (Simplified) -->
+        <div id="slide13" class="slide">
+            <h1 class="slide-title">Actual Work Snippets</h1>
+             <p class="text-center text-gray-600 mb-6">A glimpse into our development process. (Conceptual Representation)</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card">
+                    <h3>Cron Job (Data Fetching)</h3>
+                    <pre class="bg-gray-800 text-white p-3 rounded-md text-xs overflow-x-auto"><code># Pseudocode
+class FetchDataService:
+  def run(source_url):
+    html = get_html(source_url)
+    data = parse_properties(html)
+    save_to_db(data)
+                    </code></pre>
+                    <p class="text-sm text-gray-500 mt-2">Regularly fetches property data from various sources.</p>
+                </div>
+                <div class="card">
+                    <h3>Service (Data Processing)</h3>
+                     <pre class="bg-gray-800 text-white p-3 rounded-md text-xs overflow-x-auto"><code># Pseudocode
+def process_data(raw_property_data):
+  normalized_data = normalize(raw_property_data)
+  validated_data = validate(normalized_data)
+  return enrich_data(validated_data)
+                    </code></pre>
+                    <p class="text-sm text-gray-500 mt-2">Processes and normalizes data for database storage.</p>
+                </div>
+                <div class="card">
+                    <h3>API (Backend Logic)</h3>
+                     <pre class="bg-gray-800 text-white p-3 rounded-md text-xs overflow-x-auto"><code># Pseudocode
+@app.route('/api/properties')
+@jwt_required
+def get_properties():
+  filters = request.args
+  user_profile = get_user_profile(current_user)
+  results = query_db(filters, user_profile)
+  return jsonify(results)
+                    </code></pre>
+                    <p class="text-sm text-gray-500 mt-2">Backend APIs (JWT secured) for frontend consumption.</p>
+                </div>
+                <div class="card">
+                    <h3>Recommender System (ML)</h3>
+                     <pre class="bg-gray-800 text-white p-3 rounded-md text-xs overflow-x-auto"><code># Pseudocode
+model = TensorFlowModel()
+model.train(training_data)
+
+def get_recommendations(user_prefs):
+  embeddings = model.predict_embeddings(user_prefs)
+  similar_items = find_similar(embeddings)
+  return similar_items
+                    </code></pre>
+                    <p class="text-sm text-gray-500 mt-2">Training data and generating recommendations.</p>
+                </div>
+            </div>
+             <img src="https://placehold.co/700x150/E0E7FF/4F46E5?text=Zajil-AI+Homepage+Mockup" alt="Homepage Mockup" class="mx-auto mt-8 rounded-lg shadow-md">
+        </div>
+
+        <!-- Slide 14: Thank You -->
+        <div id="slide14" class="slide">
+            <div class="logo mt-12">✔ ZAJIL AI</div>
+            <h1 class="slide-title mt-16">Thank You!</h1>
+            <div class="text-center text-xl text-gray-700 space-y-2">
+                <p>Contact: <a href="mailto:hello@zajil-ai.com" class="text-indigo-600 hover:underline">hello@zajil-ai.com</a></p>
+                <p>Phone: <a href="tel:+971526187620" class="text-indigo-600 hover:underline">+971 52 618 7620</a></p>
+            </div>
+             <img src="https://placehold.co/400x200/E0E7FF/4F46E5?text=Get+In+Touch!" alt="Contact Visual" class="mx-auto mt-10 rounded-lg shadow-md">
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation-buttons">
+            <button id="prevBtn" class="nav-button" onclick="changeSlide(-1)">Previous</button>
+            <span id="slideIndicator" class="self-center text-gray-600">1 / 14</span>
+            <button id="nextBtn" class="nav-button" onclick="changeSlide(1)">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 14;
+
+        function showSlide(slideNumber) {
+            // Hide all slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            // Show the target slide
+            const targetSlide = document.getElementById('slide' + slideNumber);
+            if (targetSlide) {
+                targetSlide.classList.add('active');
+            }
+            // Update slide indicator
+            document.getElementById('slideIndicator').textContent = `${slideNumber} / ${totalSlides}`;
+
+            // Update button states
+            document.getElementById('prevBtn').disabled = slideNumber === 1;
+            document.getElementById('nextBtn').disabled = slideNumber === totalSlides;
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            if (currentSlide < 1) {
+                currentSlide = 1;
+            }
+            if (currentSlide > totalSlides) {
+                currentSlide = totalSlides;
+            }
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight') {
+                if (currentSlide < totalSlides) changeSlide(1);
+            } else if (event.key === 'ArrowLeft') {
+                 if (currentSlide > 1) changeSlide(-1);
+            }
+        });
+        
+        // Initialize first slide
+        showSlide(currentSlide);
+
+        // Simple animation for market size bars (optional, for a bit of interactivity)
+        // This would ideally run when the slide becomes active
+        // For simplicity, we'll trigger it on load if that slide is active
+        // A more robust solution would use Intersection Observer API
+        if (document.getElementById('slide5').classList.contains('active')) {
+            setTimeout(() => {
+                const marketGrowthBar = document.getElementById('marketGrowthBar');
+                const projectValueBar = document.getElementById('projectValueBar');
+                if(marketGrowthBar) marketGrowthBar.style.width = '84%';
+                if(projectValueBar) projectValueBar.style.width = '100%'; // Assuming $409B is max for this vis
+            }, 500); // Delay for effect
+        }
+    </script>
+
+</body>
+</html>
